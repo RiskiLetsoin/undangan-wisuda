@@ -243,7 +243,7 @@
   <div class="eyebrow">THE GRADUATION OF</div>
   <h1>Zulfikri Rentua, S.Tr.Par</h1>
   <div class="role">
-    <span class="program">Agribisnis dan Pariwisata Bahari</span>
+    <span class="program">Agribisnis dan Parawisata Bahari</span>
     <span class="campus">Politeknik Perikanan Negeri Tual</span>
   </div>
   <div class="ornament"></div>
@@ -294,11 +294,11 @@
       </div>
       <div class="info-cell">
         <div class="label">LOKASI</div>
-        <div class="value">Desa Lebetawi</div>
+        <div class="value">Bpk Moh Saraja Rentua</div>
       </div>
       <div class="info-cell">
         <div class="label">KOTA</div>
-        <div class="value">Tual Tual</div>
+        <div class="value">Tual, Maluku</div>
       </div>
     </div>
   </div>
@@ -416,14 +416,43 @@
     const timer = setInterval(tick, 1000);
   })();
 
-  // Music toggle
+  // Musik mulai setelah pengunjung menekan tombol; volume naik perlahan.
   const music = document.getElementById('bgMusic');
   const musicBtn = document.getElementById('musicToggle');
-  let playing = false;
-  musicBtn.addEventListener('click', ()=>{
-    if(playing){ music.pause(); musicBtn.classList.remove('spinning'); }
-    else { music.play().catch(()=>{}); musicBtn.classList.add('spinning'); }
-    playing = !playing;
+  const normalVolume = 0.35;
+  let fadeTimer;
+
+  function updateMusicButton(){
+    const isPlaying = !music.paused;
+    musicBtn.classList.toggle('spinning', isPlaying);
+    musicBtn.setAttribute('aria-label', isPlaying ? 'Jeda musik' : 'Putar musik');
+    musicBtn.setAttribute('aria-pressed', String(isPlaying));
+  }
+
+  music.addEventListener('play', updateMusicButton);
+  music.addEventListener('pause', updateMusicButton);
+  music.addEventListener('ended', updateMusicButton);
+
+  musicBtn.addEventListener('click', async ()=>{
+    if(!music.paused){
+      clearInterval(fadeTimer);
+      music.pause();
+      return;
+    }
+
+    music.volume = 0.02;
+    try{
+      await music.play();
+      clearInterval(fadeTimer);
+      const startedAt = Date.now();
+      fadeTimer = setInterval(()=>{
+        const progress = Math.min((Date.now() - startedAt) / 3000, 1);
+        music.volume = 0.02 + (normalVolume - 0.02) * progress;
+        if(progress >= 1) clearInterval(fadeTimer);
+      }, 50);
+    }catch(error){
+      updateMusicButton();
+    }
   });
 
   // RSVP form -> simpan di localStorage (per-pengunjung) + tampilkan daftar ucapan
